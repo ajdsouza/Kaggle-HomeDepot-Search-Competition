@@ -1,0 +1,296 @@
+\documentclass[twoside,12pt]{article}
+
+\usepackage[nottoc,numbib]{tocbibind}
+
+\usepackage{amsmath,amsfonts,amsthm,fullpage}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\setlength{\parindent}{0pt}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage[section]{placeins}
+\usepackage{multirow}% http://ctan.org/pkg/multirow
+\usepackage{hhline}% http://ctan.org/pkg/hhline
+
+% Use the standard article template.
+%
+% The geometry package allows for easy page formatting.
+\usepackage{geometry}
+\geometry{letterpaper}
+% Load up special logo commands.
+\usepackage{doc}
+% Package for formatting URLs.
+\usepackage{url}
+% Packages and definitions for graphics files.
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\def\argmin{\operatornamewithlimits{arg\, min}}
+\newcommand{\rbr}[1]{\left(#1\right)}
+\newcommand{\cbr}[1]{\left\{#1\right\}}
+\newcommand{\Ncal}{\mathcal{N}}
+\renewcommand{\familydefault}{\sfdefault}
+\newcommand{\setof}[1]{\ensuremath{\left \{ #1 \right \}}}
+\newcommand{\tuple}[1]{\ensuremath{\left \langle #1 \right \rangle }}
+
+%
+% Set the title, author, and date.
+%
+\title{2016 - Home Depot Product Search Relevance Kaggle Competition}
+\author{Ajay D'Souza }
+\author{
+  D'Souza, Ajay\\
+  \texttt{ajaydsouza@gatech.edu}
+}
+\date{}
+
+
+\iffalse
+*------------------------------------------------------------*
+  These are the instructions for the Report
+*------------------------------------------------------------*
+
+You will need to provide the following information:
+(a) Your name(s)
+(b) Project description
+(c) How and where you obtained the data
+(d) Scientific Research questions you may want to address
+(e) The proposed statistical methods and models (this can be changed later).
+\fi
+
+\begin{document}
+
+\maketitle
+
+% Add an abstract.
+\begin{abstract}
+The goal of this Kaggle Competition is to develop an algorithm that matches the results of the manual rating score for determining the relevance of a search string to a given product
+\end{abstract}
+
+% Add various lists on new pages.
+\pagebreak
+\tableofcontents
+
+%\pagebreak
+%\listoffigures
+%\listoftables
+
+% Start the paper on a new page.
+\pagebreak
+
+
+
+%
+% Body text.
+%
+\section{Project Description}
+\label{Introduction}
+\begin{itemize}
+\item
+\url{www.kaggle.com} has a an open competition for \textbf{\textit{Home Depot Product Search Relevance }} at \url{https://www.kaggle.com/c/home-depot-product-search-relevance}. At Home Depot humans rate the relevancy of a search string to a product by assigning an rating score to a tuple of \tuple{product,searchstring}. The on-line search algorithm at Home Depot is evaluated and tuned to use this manual rating score. Manual rating however is a slow process and will not scale. Through this competition Home Depot is seeking to find an algorithm than can learn from the manual rating process and mimic it.
+\item
+Home depot has provided a training data set that has a tuple of \tuple{product,searchstring} along with a rating score for each tuple. The rating score is in the range of $1\dots3$, with 1 indicating that the product is irrelevant to the search string and 3 indicating that the search string is fully relevant to the product. We need to train a model to be able to predict this  rating score for a tuple of \tuple{product,searchstring}. 
+\item
+A test data set comprising of tuples of \tuple{product,searchstring} is provided. The model needs to make predictions for this test set. The test results set are to be submitted and will be evaluated using RMSE (Root Mean Square Error). 
+\item
+It should be noted that the goal is not to search for the best product for a search string, but instead to develop a model which predicts a rating score that matches the manual rating score for a tuple of \tuple{product,searchstring}.
+\end{itemize}
+  
+\section{Source of Data}
+\label{Problem Definition}
+\begin{itemize}
+\item
+The data for the competition is provided on Kaggle at \url{https://www.kaggle.com/c/home-depot-product-search-relevance/data}. The data comprises of training data, test data, a catalog of product descriptions, product attributes, instructions for manual rating.  The table $\eqref{p_tab_1}$ lists the data files provided along with a description as mentioned on \url{https://www.kaggle.com}
+
+\begin{table}[h]
+\centering
+\resizebox{\textwidth}{!}{
+	\begin{tabular}{|r|l|}
+	\hline
+	train.csv & The training set, contains products, searches, and relevance scores \\
+	\hline
+	test.csv & The test set, contains products and searches. You must predict the relevance for these pairs\\
+	\hline
+	product\_descriptions.csv & Contains a text description of each product. You may join this table to the training or test set via the product\_uid\\
+	\hline
+	attributes.csv & Provides extended information about a subset of the products (typically representing detailed technical specifications). Not every product will have attributes.\\
+	\hline
+	sample\_submission.csv & A file showing the correct submission format \\
+	\hline
+	relevance\_instructions.docx & The instructions provided to human raters\\
+	\hline
+	\end{tabular}
+	}
+	\caption[]{Data for - \textbf{Home Depot Product Search Relevance} Competition}
+	\label{p_tab_1}
+\end{table}
+
+
+\item
+Table $\eqref{p_tab_2}$ provides a detailed description of the contents of the data provided in the training dataset, product description and product attributes files.
+\FloatBarrier
+\begin{table}[h]
+\centering
+\resizebox{\textwidth}{!}{
+	\begin{tabular}{|r|l|}
+	\hline
+	id & A unique Id field which represents a (search\_term, product\_uid) pair\\
+	\hline
+	product\_uid & An id for the products\\
+	\hline
+	product\_title & The product title\\
+	\hline
+	product\_description & The text description of the product (may contain HTML content)\\
+	\hline
+	search\_term & The search query\\
+	\hline
+	relevance & The average of the relevance ratings for a given id\\
+	\hline
+	name & An attribute name\\
+	\hline
+	value & The attribute's value\\
+	\hline
+	\end{tabular}
+	}
+	\caption[]{Data description - \textbf{Home Depot Product Search Relevance} Competition}
+	\label{p_tab_2}
+\end{table}
+\end{itemize}
+
+
+\FloatBarrier
+\section{Scientific Questions to be Explored}
+\label{exploratory}
+\begin{itemize}
+\item
+The predictor data provided is essentially  bunch of text. Hence this cannot be fit directly to any data mining or statistical learning processes. The data needs to be preprocessed
+\item
+The success of the project hinges on using this predictor lexical content to project the tuple of \tuple{product,searchstring} into a vector space that is a meaningful representation of this tuple.
+\item
+To achieve this objective we need to engineer a feature vector for each tuple based on its product description, product title, product attributes and the search search string in the tuple
+\item
+Since all the content is lexical, engineering the feature vector involves experimenting with one or more of the following NLP techniques in addition to the rules provided for manual rating
+\begin{enumerate}
+\item
+Bag of Words
+\item
+TFIDF
+\item
+Word2vec and text2Vec
+\item
+NLP tokenizing, Stemming , Lemmatizing, n-gram, feature and sentiment extraction
+\end{enumerate}
+\item
+With a feature vector in place for each tuple of \tuple{product,searchstring}, we can then experiment with various machine learning techniques to train and evaluate models for predicting a rating score for any tuple of \tuple{product,searchstring}
+\item
+So essentially this project has three steps
+\begin{enumerate}
+\item
+Come up with a methodology to generate a intelligent feature vector for each tuple of \tuple{product,searchstring}. With this we have the tuple of \tuple{product,searchstring} projected into a  meaningful vector space.
+\item
+Train various machine learning models on these engineered features using cross validation. Evaluate the trained models by bootstrapping to choose the best model based on MSE.
+\item
+Use the best model to generate the test results for submission
+\end{enumerate}
+\item
+The following section outlines the specific models which could be considered for the purpose
+\end{itemize}
+
+
+
+
+
+\section{Proposed Statistical Methods}
+\label{Proposed Method}
+
+\subsection{Engineer Feature Vector for \tuple{product,searchstring}}
+The feature vector for a given a tuple of \tuple{product,searchstring} will be generated using 
+\begin{enumerate}
+\item
+The rules provided for manual rating 
+\item
+A combination of one or more of lexical techniques of NLP tokenizing, Stemming , Lemmatizing, n-gram, feature and sentiment extraction, Bag of words, TFIDF, text2Vec and Word2Vec.
+\end{enumerate}
+Since the efficacy of the feature vector would depend on the model. The methodology for generating the feature vector for a given model will also be chosen by cross validation.
+
+
+\subsection{SVD to remove noise}
+Singular Value Decomposition of this matrix will filter noise and maximize the variance as follows
+\begin{itemize}
+\item
+We form a matrix of the feature vectors of all the tuples of \tuple{product,searchstring} in the training data set
+\item
+We perform a Singular Value Decomposition on this matrix
+\item
+We pick the higher rank terms so as to clear the matrix of noise and reform the matrix. 
+\item
+This is the new search matrix, which is a projection into a new lower dimensional vector space with noise filtered
+\item
+Models will be fitted on this data using cross validation
+\end{itemize}
+
+
+\subsection{Cross Validation and Bootstrapping}
+\begin{enumerate}
+\item
+For the models used, the model parameters will be chosen using ten fold cross validation on the training set 
+\item
+The performance of the optimum model will be evaluated using bootstrapping on the training set. A $50:50$ split will be used for training and testing. 
+\item
+A statistical test (T-test, Wilcox test) on the bootstrapping results, will be used to choose the best performing model
+\item
+The best performing model is then retrained using the whole training set
+\item
+This model will be used to generate the test results for submission
+\end{enumerate}
+
+
+
+\subsection{Prediction Models}
+The following prediction models will be considered
+
+\subsubsection{Boosting - Random Forests}
+\begin{itemize}
+\item
+The rating score depends largely on the interaction between the various features engineered for tuples of \tuple{product,searchstring}, rather than on the independent presence or absence of particular features in the feature vector
+\item
+Decision trees by design handle the interaction in the predictors. So they are very well suited for a dataset like this in comparison to regression models where we have to specifically add the interaction terms
+\item
+Thus we can train a decision tree based on the feature vectors engineered for the tuples of \tuple{product,searchstring} in the training data and then use it to make predictions on the test data 
+\item
+We will experiment with using random forests and boosting to train the decision tree models for this training set
+\end{itemize}
+
+
+
+\subsubsection{Regression Models}
+As discussed above regression models need to have explicit interaction terms defined in order to capture the interaction between predictors in the feature vector. So for a dataset like this ,where the results depend on the interaction of predictors, it is hard for regression models to outperform a specialized decision tree model like random forests and boosting
+
+\paragraph{Logistic Regression}
+\begin{itemize}
+\item
+The distribution and variance is not known for this dataset. Logistic regression does not assume a distribution and variance.
+\item
+The rating score which is the response for this dataset is range bound between $1\dots 3$. logistic regression ultimately predicts a probability which is in the range bound between $0\dots 1$
+\item
+So we can try to fit a logistic regression model to this dataset as follows
+\item
+To begin we convert the rating score provided in the training set into an odds ratio as $\frac{rating}{3-rating}$
+\item
+We will then try to fit a logistic regression model to this training data using the engineered feature vector for tuples of \tuple{product,searchstring} in the training data as predictors
+\item
+For predictions, the odds output by trained logistic regression model can then be scaled this back to the rating score in range of $1\dots 3$ 
+\end{itemize}
+
+\subsubsection{Other Models}
+In addition to the two models mentioned above we will also try generalized additive models, Support Vector Machine and ensemble methods of stacking and boosting for combining various models. The details of implementation are open and will be decided during execution go the project.
+
+\FloatBarrier
+%\section{Appendix}
+%\label{Appendix}
+%\begin{verbatim}
+%\end{verbatim}
+
+
+\end{document}
